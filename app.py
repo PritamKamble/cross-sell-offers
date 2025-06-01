@@ -1,7 +1,10 @@
 from langchain_community.utilities import SQLDatabase
 from langchain_community.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from dotenv import load_dotenv
 import os
@@ -66,9 +69,13 @@ def get_customer_query(customer_id: str = "GC000001") -> str:
 
 app = FastAPI()
 
-app.get("/")
-def read_root():
-    return {"message": "Welcome to the Personalized Offer API!"}
+# Mount static files and templates
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/", response_class=HTMLResponse)
+async def read_user(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/customer/{customer_id}")
 def get_customer_offer(customer_id: str):

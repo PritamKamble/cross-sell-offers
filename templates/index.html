@@ -1,0 +1,31 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Sell Recommendation</title>
+</head>
+<body>
+    <h1>Personalized Cross-Sell Offers</h1>
+    <form id="recommendation-form">
+        <label for="customer_id">Customer ID:</label>
+        <input type="text" id="customer_id" name="customer_id" value="GC000001" required>
+        <button type="submit">Get Offer</button>
+    </form>
+
+    <div id="result" style="margin-top: 20px;"></div>
+
+    <script>
+        document.getElementById("recommendation-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const customerId = document.getElementById("customer_id").value;
+            const response = await fetch("/customer/"+customerId);
+
+            const data = await response.json();
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = `<h3>Offer:</h3><p>${data.personalized_offer}</p>`;
+        });
+    </script>
+</body>
+</html>
