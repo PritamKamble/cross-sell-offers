@@ -1,0 +1,67 @@
+{
+  "customer_profile": {
+    "personal_info": {
+      "customer_id": "GC000001",
+      "first_name": "Shivani",
+      "last_name": "Taru",
+      "gender": "Female",
+      "date_of_birth": "1999-11-13",
+      "age": 25,
+      "marital_status": "Single",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "employment_status": "Salaried",
+      "occupation": "Manager",
+      "annual_income": 2500000
+    },
+    "contact_info": {
+      "email": "shivani.taru201@gmail.com",
+      "phone_number": "+91-8149412559"
+    },
+    "financial_behavior": {
+      "credit_score": 790,
+      "preferred_channels": [
+        "Email",
+        "SMS"
+      ],
+      "digital_engagement": {
+        "app_logins_last_month": 15,
+        "last_login": "2025-05-30",
+        "campaign_clicks": [
+          "Home Loan Offers",
+          "Personal Loan Pre-approved"
+        ]
+      },
+      "risk_profile": "Moderate"
+    },
+    "product_ownership": {
+      "savings_account": {
+        "bank": "State Bank of India",
+        "tenure_years": 10,
+        "average_balance": 150000
+      },
+      "personal_loan": {
+        "status": "Closed",
+        "amount": 1200000,
+        "interest_rate": 12.5,
+        "repayment_tenure_months": 24,
+        "closure_date": "2024-11-10"
+      },
+      "home_loan": {
+        "status": "Active",
+        "loan_amount": 4000000,
+        "interest_rate": 8.25,
+        "tenure_years": 20,
+        "emi_amount": 34500,
+        "start_date": "2023-08-01",
+        "loan lender": "Godrej Capital"
+      },
+      "insurance": {
+        "type": "Health",
+        "status": "Active",
+        "provider": "Bajaj Capital",
+        "coverage_amount": 500000
+      }
+    }
+  }
+}
