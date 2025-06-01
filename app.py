@@ -1,25 +1,16 @@
 from langchain_community.utilities import SQLDatabase
 from langchain_community.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
+from fastapi import FastAPI
+
 from dotenv import load_dotenv
 import os
 
 # Load environment variables
 load_dotenv()
 
-# Load API keys
-openai_key = os.getenv("OPENAI_API_KEY")
-if not openai_key:
-    raise ValueError("❌ OPENAI_API_KEY not set!")
-print(f"✅ OpenAI Key Loaded: {openai_key[:8]}...")
-
-POSTGRES_URL = os.getenv("POSTGRES")
-if not POSTGRES_URL:
-    raise ValueError("❌ POSTGRES environment variable not set!")
-print(f"🔗 Connecting to DB: {POSTGRES_URL}")
-
 # 1. Connect to PostgreSQL
-db = SQLDatabase.from_uri(POSTGRES_URL)
+db = SQLDatabase.from_uri(os.getenv("POSTGRES"))
 
 # 2. Initialize Chat Model
 llm = ChatOpenAI(model="gpt-4o", temperature=0.2)
@@ -41,41 +32,59 @@ Only suggest relevant, ethical, and valuable offers.
 # 4. Chain prompt → LLM using | pipe operator (RunnableSequence replacement)
 chain = prompt | llm
 
-# 5. Query Customer Info
-customer_id = 'GC000001'
-customer_query = f"""
-SELECT
-  c.customer_id,
-  c.first_name,
-  c.last_name,
-  c.age,
-  c.annual_income,
-  f.credit_score,
-  f.risk_profile,
-  d.app_logins_last_month,
-  d.last_login,
-  s.average_balance,
-  pl.status AS personal_loan_status,
-  hl.status AS home_loan_status,
-  hl.loan_amount,
-  i.type AS insurance_type,
-  i.status AS insurance_status
-FROM customers c
-LEFT JOIN financial_behavior f ON c.customer_id = f.customer_id
-LEFT JOIN digital_engagement d ON c.customer_id = d.customer_id
-LEFT JOIN savings_accounts s ON c.customer_id = s.customer_id
-LEFT JOIN personal_loans pl ON c.customer_id = pl.customer_id
-LEFT JOIN home_loans hl ON c.customer_id = hl.customer_id
-LEFT JOIN insurances i ON c.customer_id = i.customer_id
-WHERE c.customer_id = '{customer_id}';
-"""
+def get_customer_query(customer_id: str = "GC000001") -> str:
+    """
+    Generate SQL query to fetch customer data based on customer_id.
+    Default customer_id is 'GC000001'.
+    """
+    return f"""
+    SELECT
+      c.customer_id,
+      c.first_name,
+      c.last_name,
+      c.age,
+      c.annual_income,
+      f.credit_score,
+      f.risk_profile,
+      d.app_logins_last_month,
+      d.last_login,
+      s.average_balance,
+      pl.status AS personal_loan_status,
+      hl.status AS home_loan_status,
+      hl.loan_amount,
+      i.type AS insurance_type,
+      i.status AS insurance_status
+    FROM customers c
+    LEFT JOIN financial_behavior f ON c.customer_id = f.customer_id
+    LEFT JOIN digital_engagement d ON c.customer_id = d.customer_id
+    LEFT JOIN savings_accounts s ON c.customer_id = s.customer_id
+    LEFT JOIN personal_loans pl ON c.customer_id = pl.customer_id
+    LEFT JOIN home_loans hl ON c.customer_id = hl.customer_id
+    LEFT JOIN insurances i ON c.customer_id = i.customer_id
+    WHERE c.customer_id = '{customer_id}';
+    """
 
-# 6. Fetch Data
-try:
-    customer_data = db.run(customer_query)
-except Exception as e:
-    raise RuntimeError(f"❌ Failed to fetch customer data: {e}")
+app = FastAPI()
 
-# 7. Generate Recommendation
-result = chain.invoke({"customer_data": customer_data})
-print("🎯 Personalized Offer:\n", result.content)
+app.get("/")
+def read_root():
+    return {"message": "Welcome to the Personalized Offer API!"}
+
+@app.get("/customer/{customer_id}")
+def get_customer_offer(customer_id: str):
+    """
+    Fetch personalized offer for a given customer ID.
+    """
+    try:
+        # Fetch customer data
+        customer_data = db.run(get_customer_query(customer_id))
+        
+        # Generate recommendation
+        result = chain.invoke({"customer_data": customer_data})
+        
+        return {"personalized_offer": result.content}
+    
+    except Exception as e:
+        return {"error": str(e)}
+
+
